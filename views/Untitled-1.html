@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Invoice</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrapper {
+            width: auto;
+            height: auto;
+            border: 0.5px ridge #f3f3f3;
+            box-shadow: 5px 10px 8px #888888;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #invoice_header {
+            padding: 2rem 2rem 1rem 2rem;
+            height: 100px;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .brand_logo {
+            width: 200px;
+            float: left;
+            display: block;
+            margin: auto;
+        }
+
+        .invoice_heading {
+            margin: 0;
+            font-size: 3rem;
+            text-transform: uppercase;
+            color: #e44672;
+        }
+
+        .invoice_id {
+            text-transform: capitalize;
+            margin: 0;
+            text-align: right;
+        }
+
+        .detail {
+            width: 100%;
+            margin-bottom: 0.2rem;
+        }
+
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+        }
+
+        #main_body {
+            width: 100%;
+            height: auto;
+            width: 100%;
+        }
+
+        .user_details {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user_name {
+            text-transform: capitalize;
+            color: #e44672;
+        }
+
+        .user_city {
+            text-transform: capitalize;
+            color: gray;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .text-color {
+            color: gray;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .user_particulars {
+            margin-top: 45rem;
+            width: 95%;
+            margin: auto;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            table-layout: auto;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th,
+        td {
+            padding: 4px;
+            text-align: center;
+            text-transform: capitalize;
+            text-align: left;
+        }
+
+        td {
+            border-bottom: 1px solid #f3f3f3;
+            border-top: 0.5px solid #f3f3f3;
+        }
+
+        th.red {
+            background-color: #f3f3f3;
+            color: #e44672;
+            text-transform: uppercase;
+        }
+
+        .total_amt {
+            font-weight: 700;
+            font-size: 18px;
+            padding: 1rem 0rem 1rem 1rem;
+        }
+
+        footer {
+            margin-top: 1rem;
+            position: relative;
+            bottom: 0;
+        }
+
+        .container {
+            width: 95%;
+            height: 150px;
+            margin: auto;
+            margin-top: 2rem;
+        }
+
+        .contact_util {
+            margin-top: 0.8rem;
+            vertical-align: middle;
+        }
+
+        .business_e_details {
+            font-size: 12px;
+            width: 50%;
+            margin: auto;
+        }
+
+        .business_details {
+            float: left;
+            width: 45%;
+            height: 100%;
+        }
+
+        .business_govt_details {
+            float: right;
+            width: 45%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <header id="invoice_header">
+            <img src="http://192.168.1.13:8080/public/brand-logo.png" alt="Brand Logo" class="brand_logo" />
+            <div style="float: right;">
+                <h1 class="invoice_heading">Invoice</h1>
+                <div>
+                    <div class="detail">
+                        <h4 style="display: inline;">Invoice number: </h4>&nbsp;
+                        <h4 style="display: inline;" class="user_purchase_date text-color">
+                            <%= coursePurchase.invoiceNumber %>
+                        </h4>
+                    </div>
+                    <div class="detail">
+                        <h4 style="display: inline; padding-right: 0.2rem;">Transaction date &amp; time:</h4>&nbsp;
+                        <h4 style="display: inline;" class="user_purchase_date text-color">
+                            <%= formatDate(Date.now()) %>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <h3 style="text-align: center; margin-bottom: 0px;">
+            <%= COMPANY_NAME %>
+        </h3>
+
+        <main id="main_body">
+            <div class="container">
+                <div class="business_details">
+                    <div class="contact_util">
+                        <h6 style="font-size: 16px; display: inline;">ADDRESS:</h6>
+                        <address style="text-transform: uppercase; display: inline;">
+                            <%= COMPANY_ADDRESS %>
+                        </address>
+                    </div>
+                    <div class="contact_util">
+                        <h6 style="font-size: 16px; display: inline;">STATE:</h6>
+                        <span style="text-transform: uppercase; display: inline;">
+                            <%= COMPANY_STATE %>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="business_govt_details">
+                    <div class="contact_util">
+                        <h6 style="font-size: 16px; display: inline;">GSTIN/LUT:</h6>
+                        <span style="text-transform: uppercase; display: inline;">
+                            <% if (customerDetails.state && customerDetails.state.trim().toUpperCase() === "GUJARAT") { %>
+                                <%= COMPANY_GST_NUMBER %>
+                            <% } else { %>
+                                <%= COMPANY_LUT_NUMBER %>
+                            <% } %>
+                        </span>
+                    </div>
+                    <div class="contact_util">
+                        <h6 style="font-size: 16px; display: inline;">EMAIL:</h6>
+                        <span style="display: inline;">
+                            <%= COMPANY_EMAIL %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user_details">
+                <h3 style="text-transform: capitalize;">User Details</h3>
+                <div class="detail">
+                    <h4 style="display: inline-block; width: 20%;">Name:</h4>
+                    <h4 style="display: inline-block; padding-left: 0.8rem" class="user_name">
+                        <%= customerDetails.name %>
+                    </h4>
+                </div>
+                <div class="detail">
+                    <h4 style="display: inline-block; width: 20%;">Place of Supply:</h4>
+                    <h4 style="display: inline-block; padding-left: 0.8rem" class="user_city text-color">
+                        <%= customerDetails.state %>
+                    </h4>
+                </div>
+                <div class="detail">
+                    <h4 style="display: inline-block; width: 20%;">Mobile:</h4>
+                    <h4 style="display: inline-block; padding-left: 0.8rem" class="text-color">
+                        <%= customerDetails.mobile %>
+                    </h4>
+                </div>
+                <div class="detail">
+                    <h4 style="display: inline-block; width: 20%;">Email:</h4>
+                    <h4 style="display: inline-block; padding-left: 0.8rem" class="text-color">
+                        <%= customerDetails.email %>
+                    </h4>
+                </div>
+            </div>
+
+            <div class="user_particulars" style="margin-top: 3rem">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="red">Particulars</th>
+                            <th class="red">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Course Name: <span style="font-weight: 600">
+                                    <%= course.cname %>
+                                </span></td>
+                            <td></td>
+                        </tr>
+                        <% if (coursePurchase.transactionId) { %>
+                            <tr>
+                                <td>Transaction ID: <span style="font-weight: 600">
+                                        <%= coursePurchase.transactionId %>
+                                    </span></td>
+                                <td></td>
+                            </tr>
+                            <% } %>
+                                <tr>
+                                    <td>Base price of course (After applying discount, if any):</td>
+                                    <td>
+                                        <%= coursePurchase.amountWithoutGst %>
+                                    </td>
+                                </tr>
+
+                                <% if(coursePurchase.cgst> 0 || coursePurchase.sgst > 0) { %>
+                                    <tr>
+                                        <td>CGST <%= (course.courseGst / 2).toFixed(2) %> %</td>
+                                        <td>
+                                            <%= coursePurchase.cgst.toFixed(2) %>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>SGST <%= (course.courseGst / 2).toFixed(2) %> %</td>
+                                        <td>
+                                            <%= coursePurchase.sgst.toFixed(2) %>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+
+                                        <% if(coursePurchase.igst> 0) { %>
+                                            <tr>
+                                                <td>IGST <%= course.courseGst.toFixed(2) %> %</td>
+                                                <td>
+                                                    <%= coursePurchase.igst.toFixed(2) %>
+                                                </td>
+                                            </tr>
+                                            <% } %>
+
+                                                <tr>
+                                                    <td class="total_amt">Total:</td>
+                                                    <td>
+                                                        <%= coursePurchase.totalPaidAmount %>
+                                                    </td>
+                                                </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+        <footer>
+            <div style="width: 100%;">
+                <div style="margin-left: auto; width: 30%;">
+                        <img src="http://192.168.1.13:8080/public/hardik_sign.png" alt="Signature" style="width: 62px; height: 36px;" />
+                    <h5>authorised signature</h5>
+                </div>
+            </div>
+            <div class="business_e_details"
+                style="background-color: #f3f3f3; width: 100%; padding: 1rem 0.5rem 0.5rem 0.5rem;">
+                <div style="width: 50%; margin: auto;">
+                    <div style=" display: inline-block ; margin: auto;margin-left: 2.5rem;">
+                            <img src="http://192.168.1.13:8080/public/phone_icon.svg" alt="Phone" class="phone" style="display: inline-block; width: 10%; height: auto;" />
+                        <p style="display: inline-block;margin:0; margin-left: 0.5rem">
+                            <%= COMPANY_HELPLINE %>
+                        </p>
+                    </div>
+                    <div style=" display: inline-block ; margin: auto;">
+                            <img src="http://192.168.1.13:8080/public/home_icon.svg" alt="Email" class="email" style="display: inline-block;" />
+                        <p style="display: inline-block; margin:0;margin-left: 0.5rem">
+                            <%= COMPANY_EMAIL %>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
