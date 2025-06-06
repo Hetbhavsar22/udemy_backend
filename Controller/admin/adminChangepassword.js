@@ -3,17 +3,11 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const adminModel = require("../../Model/adminModel");
 const jwt = require("jsonwebtoken");
-const Settinginfo = require("../../trait/SecretManager");
 const upload = require("../../middleware/upload");
 
 async function getSecretKey() {
   try {
-    if (process.env.APP_ENV === "local") {
-      return process.env.SECRET_KEY;
-    } else {
-      const secret = await Settinginfo.getSecretValue(["COURSE_SECRET_KEY"]);
-      return secret.COURSE_SECRET_KEY;
-    }
+    return process.env.SECRET_KEY;
   } catch (error) {
     throw new Error("Could not retrieve SECRET_KEY");
   }

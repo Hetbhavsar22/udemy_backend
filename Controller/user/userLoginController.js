@@ -3,26 +3,16 @@ const userModel = require("../../Model/userModel");
 const jwt = require("jsonwebtoken");
 const { ObjectId } = require("mongodb");
 const { body, validationResult } = require("express-validator");
-const Settinginfo = require("../../trait/SecretManager");
 const sendOTPObj = require("../../Externalapi/Sendotp");
 
 async function getSecretKey() {
   try {
-    if (process.env.APP_ENV === "local") {
-      return process.env.SECRET_KEY;
-    } else {
-      const secret = await Settinginfo.getSecretValue(["COURSE_SECRET_KEY"]);
-      return secret.COURSE_SECRET_KEY;
-    }
+    return process.env.SECRET_KEY;
   } catch (error) {
     throw new Error("Could not retrieve SECRET_KEY");
   }
 }
-const redis = require("redis");
 
-const redisClient = redis.createClient();
-
-redisClient.connect().catch(console.error);
 
 const ATTEMPT_LIMIT = 3;
 const ATTEMPT_EXPIRATION = 5 * 60;
@@ -56,7 +46,7 @@ const generateToken = async (userDetail) => {
 const login = async (req, res) => {
   try {
     const { countryCode, phoneNumber } = req.body;
-
+    
     if (!phoneNumber) {
       return res.status(400).json({
         status: 400,
@@ -81,17 +71,6 @@ const login = async (req, res) => {
       return res.status(400).json({
         status: 400,
         message: "Phone number must be between 7 and 14 digits.",
-      });
-    }
-
-    const otpAttemptKey = `otp_generation_attempts:${phoneNumber}`;
-    const otpAttempts = (await redisClient.get(otpAttemptKey)) || 0;
-
-    if (otpAttempts >= OTP_GENERATION_LIMIT) {
-      return res.status(429).json({
-        status: 429,
-        message:
-          "You have exceeded the maximum number of OTP generation attempts. Please try again later.",
       });
     }
 
@@ -128,6 +107,10 @@ const login = async (req, res) => {
       );
       userDetail.last_Browser_finger_print = browserFingerPrint;
       userDetail.isVerified = false;
+      
+      // Save the user details with OTP before sending response
+      await userDetail.save();
+
       // Send OTP to user via SMS
       // var otpParams = {
       //   country_code: userDetail.countryCode,
@@ -146,10 +129,6 @@ const login = async (req, res) => {
       //   });
       // }
 
-      await redisClient.incr(otpAttemptKey);
-      await redisClient.expire(otpAttemptKey, OTP_GENERATION_BLOCK_DURATION);
-      await userDetail.save();
-
       return res.status(200).json({
         status: 200,
         message: "OTP has been sent to your phone number",
@@ -165,8 +144,6 @@ const login = async (req, res) => {
         currentDate.getTime() + 24 * 60 * 60 * 1000
       );
 
-      await redisClient.del(otpAttemptKey);
-
       await userDetail.save();
 
       return res.status(200).json({
@@ -180,6 +157,7 @@ const login = async (req, res) => {
       });
     }
   } catch (error) {
+    console.error("Login error:", error);
     return res.status(404).json({
       status: 404,
       message: "Something went wrong. Please try again later.",
@@ -188,7 +166,6 @@ const login = async (req, res) => {
 };
 
 const verifyOTP = async (req, res) => {
-  const attemptKey = `otp_attempts:${req.body.phoneNumber}`;
   try {
     await Promise.all([
       body("otp").notEmpty().withMessage("OTP is required").run(req),
@@ -208,16 +185,6 @@ const verifyOTP = async (req, res) => {
 
     const { otp, verification_token } = req.body;
 
-    const attempts = await redisClient.get(attemptKey);
-    const currentAttempts = attempts ? parseInt(attempts, 10) : 0;
-
-    if (currentAttempts >= ATTEMPT_LIMIT) {
-      return res.json({
-        message: `You have exceeded the maximum number of OTP verification attempts. Please request a new OTP after 2 minutes.`,
-        status: 401,
-      });
-    }
-
     const userDetail = await userModel.findOne({ verification_token });
 
     if (!userDetail) {
@@ -228,21 +195,6 @@ const verifyOTP = async (req, res) => {
     }
 
     const currentDate = new Date();
-
-    if (userDetail.otp !== otp) {
-      await redisClient
-        .multi()
-        .incr(attemptKey)
-        .expire(attemptKey, ATTEMPT_EXPIRATION)
-        .exec();
-
-      const remainingAttempts = ATTEMPT_LIMIT - (currentAttempts + 1);
-
-      return res.status(400).json({
-        status: 400,
-        message: `Invalid OTP. You have ${remainingAttempts} attempt(s) remaining.`,
-      });
-    }
 
     if (
       userDetail.otp_expire_time &&
@@ -266,8 +218,6 @@ const verifyOTP = async (req, res) => {
     userDetail.isVerified = true;
 
     await userDetail.save();
-
-    await redisClient.del(attemptKey);
 
     return res.status(200).json({
       status: 200,
@@ -428,13 +378,13 @@ const resend_Otp = async (req, res) => {
       if (otpResponse.data.status !== 200) {
         return res.json({
           status: 401,
-          message: 'Failed to send OTP. Please try again later.',
+          message: "Failed to send OTP. Please try again later.",
         });
       }
     } catch (error) {
       return res.json({
         status: 404,
-        message: 'Failed to send OTP. Please try again later.',
+        message: "Failed to send OTP. Please try again later.",
       });
     }
 

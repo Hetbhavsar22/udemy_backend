@@ -6,21 +6,10 @@ require("dotenv").config();
 
 async function getRazorpayKeys() {
   try {
-    if (process.env.APP_ENV === "local") {
-      return {
+    return {
         razorpayId: process.env.RAZORPAY_ID_KEY,
         razorpaySecret: process.env.RAZORPAY_SECRET_KEY,
       };
-    } else {
-      const secret = await Settinginfo.getSecretValue([
-        "RAZORPAY_TEST_KEY",
-        "RAZORPAY_TEST_SECRET",
-      ]);
-      return {
-        razorpayId: secret.COURSE_RAZORPAY_ID_KEY,
-        razorpaySecret: secret.COURSE_RAZORPAY_SECRET_KEY,
-      };
-    }
   } catch (error) {
     throw new Error("Could not retrieve Razorpay keys");
   }

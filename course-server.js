@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const path = require("path");
-const Settinginfo = require("./trait/SecretManager");
 require("dotenv").config();
 const { generateInvoicePDF } = require("./Controller/user/invoiceController");
 
@@ -22,8 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     // origin: "https://stgcourse.garbhsanskarguru.com",
-    // origin: "http://localhost:3000",
-    origin: ["http://192.168.1.13:3000", "http://192.168.1.10:3000" ],
+    origin: "http://localhost:3000",
+    // origin: ["http://192.168.1.13:3000", "http://192.168.1.10:3000" ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
@@ -32,14 +31,7 @@ app.use(
 async function connectToDB() {
   let mongoURI;
 
-  if (process.env.APP_ENV === "local") {
-    mongoURI = process.env.DB_STRING;
-  } else {
-    const secretValue = await Settinginfo.getSecretValue([
-      "COURSE_MONGO_DB_URL",
-    ]);
-    mongoURI = secretValue.COURSE_MONGO_DB_URL;
-  }
+  mongoURI = process.env.DB_STRING;
 
   try {
     await mongoose.connect(mongoURI);

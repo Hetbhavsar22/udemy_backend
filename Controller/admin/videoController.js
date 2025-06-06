@@ -16,16 +16,10 @@ const { exec } = require("child_process");
 const encodeUrl = (url) => {
   return Buffer.from(url).toString("base64");
 };
-const Settinginfo = require("../../trait/SecretManager");
 
 async function getSecretKey() {
   try {
-    if (process.env.APP_ENV === "local") {
-      return process.env.SECRET_KEY;
-    } else {
-      const secret = await Settinginfo.getSecretValue(["COURSE_SECRET_KEY"]);
-      return secret.COURSE_SECRET_KEY;
-    }
+    return process.env.SECRET_KEY;
   } catch (error) {
     throw new Error("Could not retrieve SECRET_KEY");
   }
@@ -161,10 +155,11 @@ const createVideo = (req, res) => {
         }
 
         const manifestPath = path.join(outputDir, `${videoFileName}.mpd`);
+        const mp4boxPath = `"C:/Program Files/GPAC/MP4Box.exe"`;
 
         await new Promise((resolve, reject) => {
           exec(
-            `MP4Box -dash 20000 -frag 20000 -rap -profile live -out "${manifestPath}" "${videoFilePath}"`,
+            `${mp4boxPath} -dash 20000 -frag 20000 -rap -profile live -out "${manifestPath}" "${videoFilePath}"`,
             (error, stdout, stderr) => {
               if (error) {
                 return reject(`Error generating DASH manifest: ${stderr}`);
@@ -187,6 +182,7 @@ const createVideo = (req, res) => {
         video: newVideo,
       });
     } catch (error) {
+      console.log("error", error);
       return res.status(404).json({
         status: 404,
         message: "Failed to create video",
@@ -547,8 +543,8 @@ const coursechapters = async (req, res) => {
     res.json({ chapters: course.chapters });
   } catch (error) {
     res.status(404).json({
-      status: 404, 
-      message: "Failed to fetch chapters" 
+      status: 404,
+      message: "Failed to fetch chapters",
     });
   }
 };

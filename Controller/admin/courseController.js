@@ -15,16 +15,10 @@ const util = require("util");
 const jwt = require("jsonwebtoken");
 const pdf = require("html-pdf");
 const moment = require("moment");
-const Settinginfo = require("../../trait/SecretManager");
 
 async function getSecretKey() {
   try {
-    if (process.env.APP_ENV === "local") {
-      return process.env.SECRET_KEY;
-    } else {
-      const secret = await Settinginfo.getSecretValue(["COURSE_SECRET_KEY"]);
-      return secret.COURSE_SECRET_KEY;
-    }
+    return process.env.SECRET_KEY;
   } catch (error) {
     console.error("Error fetching secret key:", error);
     throw new Error("Could not retrieve SECRET_KEY");

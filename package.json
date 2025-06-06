@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node index.js",
+    "dev": "nodemon course-server.js",
     "start": "node start -p 22006"
   },
   "author": "",
@@ -32,8 +32,8 @@
     "mongoose": "^8.5.1",
     "mp4box": "^0.5.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.15",
-    "nodemon": "^3.1.4",
+    "nodemailer": "^6.10.1",
+    "nodemon": "^3.1.10",
     "path": "^0.12.7",
     "pdf-viewer": "^0.8.1",
     "pdfkit": "^0.15.0",

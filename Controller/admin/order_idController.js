@@ -13,7 +13,6 @@ require("dotenv").config();
 const path = require("path");
 const ejs = require("ejs");
 const fs = require("fs");
-const Settinginfo = require("../../trait/SecretManager");
 
 const createOrder = async (req, res) => {
   try {
@@ -51,21 +50,10 @@ const createOrder = async (req, res) => {
     const secretKey = crypto.randomBytes(32).toString("hex");
 
     let razorpayInstance;
-    if (process.env.APP_ENV === "local") {
-      razorpayInstance = new Razorpay({
+    razorpayInstance = new Razorpay({
         key_id: process.env.RAZORPAY_ID_KEY,
         key_secret: process.env.RAZORPAY_SECRET_KEY,
       });
-    } else {
-      const secret = await Settinginfo.getSecretValue([
-        "RAZORPAY_TEST_KEY",
-        "RAZORPAY_TEST_SECRET",
-      ]);
-      razorpayInstance = new Razorpay({
-        key_id: secret.RAZORPAY_TEST_KEY,
-        key_secret: secret.RAZORPAY_TEST_SECRET,
-      });
-    }
 
     const options = {
       amount: amount * 100,
@@ -324,23 +312,12 @@ const verifyPayment = async (req, res) => {
     
     let razorpayInstance;
     let razorpaySecret;
-    if (process.env.APP_ENV === "local") {
       razorpaySecret = process.env.RAZORPAY_SECRET_KEY,
       razorpayInstance = new Razorpay({
         key_id: process.env.RAZORPAY_ID_KEY,
         key_secret: razorpaySecret,
       });
-    } else {
-      const secret = await Settinginfo.getSecretValue([
-        "RAZORPAY_TEST_KEY",
-        "RAZORPAY_TEST_SECRET",
-      ]);
-      razorpaySecret = secret.RAZORPAY_TEST_SECRET,
-      razorpayInstance = new Razorpay({
-        key_id: secret.RAZORPAY_TEST_KEY,
-        key_secret: razorpaySecret,
-      });
-    }
+   
 
     if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
       return res.json({
@@ -573,10 +550,18 @@ const verifyPayment = async (req, res) => {
       ],
     };
 
+    if (!fs.existsSync(pdfPath)) {
+      console.error("PDF file not found at:", pdfPath);
+      return res.json({
+        status: 404,
+        message: "Invoice PDF not found.",
+      });
+    }
+      
     const emailResponse = await sendEmail(emailParams);
 
     if (emailResponse.data.status !== 200) {
-      res.json({
+      return res.json({
         status: 404,
         message: "Error sending email.",
       });
@@ -588,7 +573,7 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       status: 200,
       success: true,
       message:
@@ -609,21 +594,10 @@ const initiateRefund = async (purchaseId) => {
     const purchase = await CoursePurchase.findById(purchaseId);
 
     let razorpayInstance;
-    if (process.env.APP_ENV === "local") {
-      razorpayInstance = new Razorpay({
+    razorpayInstance = new Razorpay({
         key_id: process.env.RAZORPAY_ID_KEY,
         key_secret: process.env.RAZORPAY_SECRET_KEY,
       });
-    } else {
-      const secret = await Settinginfo.getSecretValue([
-        "RAZORPAY_TEST_KEY",
-        "RAZORPAY_TEST_SECRET",
-      ]);
-      razorpayInstance = new Razorpay({
-        key_id: secret.RAZORPAY_TEST_KEY,
-        key_secret: secret.RAZORPAY_TEST_SECRET,
-      });
-    }
 
     if (!purchase) {
       throw new Error("Purchase not found");
